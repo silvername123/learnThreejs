@@ -3,7 +3,7 @@ import HelloWorld from "./components/HelloWorld.vue";
 import TheWelcome from "./components/TheWelcome.vue";
 import TestTree3D from "./components/TestTree3D.vue";
 import AnimationLoop from "./components/AnimationLoop.vue";
-import TextureLoader from "./components/TextureLoader.vue";
+import TextureLoader from "./components/TextureLoader/TextureLoader.vue";
 </script>
 
 <template>
