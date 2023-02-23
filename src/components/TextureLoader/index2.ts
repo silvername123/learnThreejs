@@ -11,13 +11,17 @@ import {
   MathUtils,
   Mesh,
   MeshStandardMaterial,
+  Object3D,
   PerspectiveCamera,
   Scene,
   SphereGeometry,
   TextureLoader,
+  Vector3,
   WebGLRenderer,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { loadBirds } from "../testThreejs/World/components/birds/birds";
+import Train from "../testThreejs/World/components/Train/train";
 
 export default class TestTexture {
   scene: Scene | null = null;
@@ -28,8 +32,18 @@ export default class TestTexture {
   update: any[] | undefined;
   group: Group | null = null;
   radiansPerSecond = MathUtils.degToRad(30);
+  train: Train | undefined;
+  things: Object3D[] | null = null;
   constructor() {
-    this.init();
+    this.things = [];
+    // this.init();
+    // this.getThings();
+  }
+  getThings(): any {
+    return this.things;
+  }
+  setThings(data: any) {
+    this.things?.push(data);
   }
   setCamera(): void {
     this.camera = new PerspectiveCamera(35, 1, 0.1, 100);
@@ -62,12 +76,29 @@ export default class TestTexture {
     material.map = texture.load("/src/assets/wenli.png");
     this.mesh = new Mesh(geometry, material);
     // this.mesh.rotation.set(-0.5, -0.1, 0.9);
-    this.scene?.add(this.mesh);
     // this.render();
+  }
+  setTrainGroup(): void {
+    this.train = new Train();
+    const trainGroup = new Group();
+    trainGroup.add(this.train);
+    for (let i = 0.1; i <= 1; i += 0.1) {
+      const cloneTrain = this.train.clone();
+      cloneTrain.position.x = i * 20;
+      trainGroup.add(cloneTrain);
+    }
+    this.scene?.add(trainGroup);
+  }
+  setTrain(): void {
+    this.train = new Train();
+    // const cloneTrain = this.train.clone();
+    // cloneTrain.position.set(0, 0, 5);
+    // this.scene?.add(this.train, cloneTrain);
+    this.scene?.add(this.train);
   }
   setRenderer(): void {
     this.renderer = new WebGLRenderer();
-    this.renderer.setSize(800, 800);
+    this.renderer.setSize(1000, 900);
     this.renderer.physicallyCorrectLights = true;
     document.getElementById("test")?.append(this.renderer.domElement);
   }
@@ -106,15 +137,33 @@ export default class TestTexture {
     const helper = new AxesHelper(3);
     helper.position.set(-3.5, 0, -3.5);
     this.scene?.add(helper);
-    const ghelper = new GridHelper(6);
+    const ghelper = new GridHelper(6, 20);
     this.scene?.add(ghelper);
   }
+  async setBirds(): Promise<void> {
+    const data = await loadBirds();
+    const parrotData = data.parrotDataMesh;
+    const flamingoData = data.flamingoDataMesh;
+    const storkData = data.storkDataMesh;
+    // this.setThings(parrotData);
+    this.things?.push(parrotData, flamingoData, storkData);
+    this.controls?.target.copy(flamingoData.position);
+
+    this.scene?.add(parrotData, flamingoData, storkData);
+  }
+  setControlsPosition = (index: number) => {
+    if (this.things && this.things.length > 0)
+      this.controls?.target.copy(this.things[index].position);
+  };
   init(): void {
     this.setCamera();
     this.setScene();
     this.setRenderer();
     this.setNet();
-    this.setMesh();
+    // this.setTrain();
+    this.setBirds();
+    // this.setTrainGroup();
+    // this.setMesh();
     this.renderControls();
     // this.setGroup();
     this.animate();
@@ -122,16 +171,17 @@ export default class TestTexture {
   }
   tick(clock: Clock): void {
     const delta = clock.getDelta();
-    console.log("delta", delta * 1000);
+    // console.log("delta", delta * 1000);
     if (this.group) this.group.rotation.z -= this.radiansPerSecond * delta;
+    this.train?.tick(delta);
   }
-
   animate() {
     const clock = new Clock();
 
     this.renderer?.setAnimationLoop(() => {
       //   if (this.mesh) this.mesh.rotation.y = this.mesh.rotation.y + 0.01;
       this.tick(clock);
+
       this.controls?.update();
       this.render();
     });
