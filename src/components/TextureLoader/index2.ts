@@ -152,8 +152,15 @@ export default class TestTexture {
     this.scene?.add(parrotData, flamingoData, storkData);
   }
   setControlsPosition = (index: number) => {
-    if (this.things && this.things.length > 0)
-      this.controls?.target.copy(this.things[index].position);
+    if (this.things) {
+      if (index >= this.things?.length) {
+        const temp = new Vector3(10, 10, 10);
+        this.controls?.target.copy(temp);
+      } else {
+        if (this.things.length > 0)
+          this.controls?.target.copy(this.things[index].position);
+      }
+    }
   };
   init(): void {
     this.setCamera();
