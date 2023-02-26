@@ -31,6 +31,15 @@ onMounted(() => {
       <button
         @click="
           () => {
+            test.setControlsPosition(4);
+          }
+        "
+      >
+        重置镜头
+      </button>
+      <button
+        @click="
+          () => {
             test.setControlsPosition(1);
           }
         "
